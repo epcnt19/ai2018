@@ -150,6 +150,9 @@ def main(filepath,dbpath,picklepath):
     evaluation_dict = {}
     ranking_dict = {}
 
+    print(term_doc.shape)
+    input()
+
     claster_num = int(int(len(sample_noun_dict.keys())) * 0.1)
     clusters = KMeans(n_clusters=claster_num,random_state=0).fit_predict(term_doc)
 
@@ -158,39 +161,40 @@ def main(filepath,dbpath,picklepath):
         lines += line + "\n"
         evaluation_dict.update({address:[cls,term_doc[i,:]]})
 
-    # filewrite("./result.csv",lines)
+    filewrite("./result.csv",lines)
 
-    # select random query
-    select_address_name = random.choice(list(evaluation_dict.keys()))
-    select_address_cls = evaluation_dict[select_address_name][0]
-    select_address_vector = evaluation_dict[select_address_name][1]
+    for n in range(100):
+        # select random query
+        select_address_name = random.choice(list(evaluation_dict.keys()))
+        select_address_cls = evaluation_dict[select_address_name][0]
+        select_address_vector = evaluation_dict[select_address_name][1]
 
-    print("select address : {}".format(select_address_name))
-    print("select_address cluster : {}".format(str(select_address_cls)))
+        print("select address : {}".format(select_address_name))
+        print("select_address cluster : {}".format(str(select_address_cls)))
 
-    # calculate cos similarity
-    for k,v in evaluation_dict.items():
-        if k != select_address_name:
-            target_address_name = k
-            target_address_cls = evaluation_dict[target_address_name][0]
-            target_address_vector = evaluation_dict[target_address_name][1]
+        # calculate cos similarity
+        for k,v in evaluation_dict.items():
+            if k != select_address_name:
+                target_address_name = k
+                target_address_cls = evaluation_dict[target_address_name][0]
+                target_address_vector = evaluation_dict[target_address_name][1]
 
-            cos = cosine_similarity(select_address_vector,target_address_vector)
-            ranking_dict.update({target_address_name:cos})
+                cos = cosine_similarity(select_address_vector,target_address_vector)
+                ranking_dict.update({target_address_name:cos})
 
-    # sort ranking
-    hit_count  = 0
+        # sort ranking
+        hit_count  = 0
 
-    for i,(k,v) in enumerate(sorted(ranking_dict.items(),key=lambda x:x[1],reverse=True)):
-        if i < 10:
-            print("address : {}".format(k))
-            print("cos similarity : {}".format(str(v[0][0])))
-            print("cluster : {}".format(str(evaluation_dict[k][0])))
+        for i,(k,v) in enumerate(sorted(ranking_dict.items(),key=lambda x:x[1],reverse=True)):
+            if i < 10:
+                print("address : {}".format(k))
+                print("cos similarity : {}".format(str(v[0][0])))
+                print("cluster : {}".format(str(evaluation_dict[k][0])))
 
-            if evaluation_dict[k][0] == select_address_cls:
-                hit_count += 1
+                if evaluation_dict[k][0] == select_address_cls:
+                    hit_count += 1
 
-    print("ability : {}".format(str(float(hit_count*1.0/10))))
+        # print("{},{}".format(str(select_address_cls),str(float(hit_count*1.0/10))))
 
     con.close()
 
