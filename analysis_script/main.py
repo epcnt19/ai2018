@@ -150,9 +150,6 @@ def main(filepath,dbpath,picklepath):
     evaluation_dict = {}
     ranking_dict = {}
 
-    print(term_doc.shape)
-    input()
-
     claster_num = int(int(len(sample_noun_dict.keys())) * 0.1)
     clusters = KMeans(n_clusters=claster_num,random_state=0).fit_predict(term_doc)
 
